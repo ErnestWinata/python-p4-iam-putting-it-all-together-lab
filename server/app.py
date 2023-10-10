@@ -31,6 +31,44 @@ class Signup(Resource):
             db.session.rollback()
             return {'error': 'Could not create user'}, 422
 
+class CheckSession(Resource):
+    def get(self):
+        user_id = session.get('user_id')
+        if user_id:
+            user = User.query.get(user_id)
+            return user.to_dict(), 200
+        else:
+            return {'error': 'Unauthorized'}, 401
+
+class Login(Resource):
+    def post(self):
+        data = request.get_json()
+        username = data.get('username')
+        password = data.get('password')
+
+        user = User.query.filter_by(username=username).first()
+        if user and user.authenticate(password):
+            session['user_id'] = user.id
+            return user.to_dict(), 200
+        else:
+            return {'error': 'Unauthorized'}, 401
+
+class Logout(Resource):
+    def delete(self):
+        if 'user_id' in session:
+            session.pop('user_id')
+            return '', 204
+        else:
+            return {'error': 'Unauthorized'}, 401
+
+class RecipeIndex(Resource):
+    def get(self):
+        user_id = session.get('user_id')
+        if user_id:
+            recipes = Recipe.query.filter_by(user_id=user_id).all()
+            return [recipe.to_dict() for recipe in recipes], 200
+        else:
+            return {'error': 'Unauthorized'}, 401
 
 
 
