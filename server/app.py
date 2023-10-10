@@ -55,11 +55,8 @@ class Login(Resource):
 
 class Logout(Resource):
     def delete(self):
-        if 'user_id' in session:
-            session.pop('user_id')
-            return '', 204
-        else:
-            return {'error': 'Unauthorized'}, 401
+        session.pop('user_id', None)
+        return {'message': 'Logged out successfully'}, 200
 
 class RecipeIndex(Resource):
     def get(self):
